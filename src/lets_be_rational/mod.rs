@@ -1,3 +1,5 @@
+use num_traits::{AsPrimitive, Float, FloatConst, FromPrimitive};
+
 use crate::lets_be_rational::black::normalised_black;
 use crate::OptionType;
 
@@ -9,8 +11,8 @@ mod so_rational;
 
 const IMPLIED_VOLATILITY_MAXIMUM_ITERATIONS: i32 = 2;
 pub(crate) const DENORMALISATION_CUTOFF: f64 = 0.0;
-pub(crate) const SQRT_TWO_PI: f64 = 2.506_628_274_631_000_7;
-pub(crate) const ONE_OVER_SQRT_TWO_PI: f64 = 1.0 / SQRT_TWO_PI;
+pub(crate) const SQRT_TWO_PI: f64 = statrs::consts::SQRT_2PI;
+pub(crate) const ONE_OVER_SQRT_TWO_PI: f64 = 1.0 / statrs::consts::SQRT_2PI;
 
 /// Calculates the price of a European option using the Black model.
 ///
@@ -44,23 +46,26 @@ pub(crate) const ONE_OVER_SQRT_TWO_PI: f64 = 1.0 / SQRT_TWO_PI;
 /// The function uses the natural logarithm of the forward price over the strike price,
 /// multiplies it by the square root of time to maturity, and applies the option type
 /// to determine the final price. It's suitable for European options *only*.
-pub fn black(
-    forward_price: f64,
-    strike_price: f64,
-    sigma: f64,
-    time_to_maturity: f64,
+pub fn black<T>(
+    forward_price: T,
+    strike_price: T,
+    sigma: T,
+    time_to_maturity: T,
     option_type: OptionType,
-) -> f64 {
-    let q: f64 = option_type.into();
-    let intrinsic = (if q < 0.0 {
+) -> T
+where
+    T: Float + FromPrimitive + AsPrimitive<f64>,
+{
+    let q: T = T::from::<f64>(option_type.into()).unwrap();
+    let intrinsic = (if q < T::zero() {
         strike_price - forward_price
     } else {
         forward_price - strike_price
     })
-    .max(0.0)
+    .max(T::zero())
     .abs();
     // Map in-the-money to out-of-the-money
-    if q * (forward_price - strike_price) > 0.0 {
+    if q * (forward_price - strike_price) > T::zero() {
         return intrinsic
             + black(
                 forward_price,
@@ -80,13 +85,16 @@ pub fn black(
     )
 }
 
-pub fn implied_volatility_from_a_transformed_rational_guess(
-    market_price: f64,
-    forward_price: f64,
-    strike_price: f64,
-    time_to_maturity: f64,
+pub fn implied_volatility_from_a_transformed_rational_guess<T>(
+    market_price: T,
+    forward_price: T,
+    strike_price: T,
+    time_to_maturity: T,
     option_type: OptionType,
-) -> f64 {
+) -> T
+where
+    T: Float + FromPrimitive + AsPrimitive<f64> + FloatConst,
+{
     so_rational::implied_volatility_from_a_transformed_rational_guess_with_limited_iterations(
         market_price,
         forward_price,
