@@ -1,8 +1,10 @@
 use num_traits::{float::FloatConst, AsPrimitive, Float, FromPrimitive};
 
 use crate::{
-    greeks::Greeks, lets_be_rational::implied_volatility_from_a_transformed_rational_guess,
-    pricing::Pricing, Inputs, A, B, C, D, F, SQRT_2PI, _E,
+    greeks::Greeks,
+    lets_be_rational::{implied_volatility_from_a_transformed_rational_guess, FloatMaxIterations},
+    pricing::Pricing,
+    Inputs, A, B, C, D, F, SQRT_2PI, _E,
 };
 
 pub trait ImpliedVolatility<T>: Pricing<T> + Greeks<T>
@@ -15,7 +17,7 @@ where
 
 impl<T> ImpliedVolatility<T> for Inputs<T>
 where
-    T: Float + FromPrimitive + AsPrimitive<f64> + FloatConst,
+    T: Float + FromPrimitive + AsPrimitive<f64> + FloatConst + FloatMaxIterations,
 {
     /// Calculates the implied volatility of the option.
     /// Tolerance is the max error allowed for the implied volatility,
