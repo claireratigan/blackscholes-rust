@@ -9,10 +9,27 @@ mod normal_distribution;
 mod rational_cubic;
 mod so_rational;
 
-const IMPLIED_VOLATILITY_MAXIMUM_ITERATIONS: i32 = 2;
 pub(crate) const DENORMALISATION_CUTOFF: f64 = 0.0;
 pub(crate) const SQRT_TWO_PI: f64 = statrs::consts::SQRT_2PI;
 pub(crate) const ONE_OVER_SQRT_TWO_PI: f64 = 1.0 / statrs::consts::SQRT_2PI;
+
+pub trait FloatMaxIterations {
+    fn implied_volatility_maximum_iterations() -> i32;
+}
+
+impl FloatMaxIterations for f32 {
+    #[inline]
+    fn implied_volatility_maximum_iterations() -> i32 {
+        1
+    }
+}
+
+impl FloatMaxIterations for f64 {
+    #[inline]
+    fn implied_volatility_maximum_iterations() -> i32 {
+        2
+    }
+}
 
 /// Calculates the price of a European option using the Black model.
 ///
@@ -93,7 +110,7 @@ pub fn implied_volatility_from_a_transformed_rational_guess<T>(
     option_type: OptionType,
 ) -> T
 where
-    T: Float + FromPrimitive + AsPrimitive<f64> + FloatConst,
+    T: Float + FromPrimitive + AsPrimitive<f64> + FloatConst + FloatMaxIterations,
 {
     so_rational::implied_volatility_from_a_transformed_rational_guess_with_limited_iterations(
         market_price,
@@ -101,6 +118,6 @@ where
         strike_price,
         time_to_maturity,
         option_type,
-        IMPLIED_VOLATILITY_MAXIMUM_ITERATIONS,
+        T::implied_volatility_maximum_iterations(),
     )
 }
