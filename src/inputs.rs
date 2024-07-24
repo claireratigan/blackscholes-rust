@@ -3,7 +3,7 @@ use std::ops::Neg;
 
 /// The type of option to be priced (call or put).
 #[derive(Debug, Clone, Eq, PartialEq, Copy)]
-#[repr(i32)]
+#[repr(i8)]
 pub enum OptionType {
     Call = 1,
     Put = -1,
@@ -12,6 +12,7 @@ pub enum OptionType {
 impl Neg for OptionType {
     type Output = Self;
 
+    #[inline]
     fn neg(self) -> Self::Output {
         match self {
             OptionType::Call => OptionType::Put,
@@ -29,11 +30,24 @@ impl Display for OptionType {
     }
 }
 
-impl From<OptionType> for f64 {
-    fn from(val: OptionType) -> Self {
-        val as i32 as f64
-    }
+macro_rules! impl_from_option {
+    ($type:ty) => {
+        impl From<OptionType> for $type {
+            #[inline]
+            fn from(val: OptionType) -> Self {
+                <$type>::from(val as i8)
+            }
+        }
+    };
 }
+
+impl_from_option!(f32);
+impl_from_option!(f64);
+impl_from_option!(i8);
+impl_from_option!(i16);
+impl_from_option!(i32);
+impl_from_option!(i64);
+impl_from_option!(i128);
 
 /// The inputs to the Black-Scholes-Merton model.
 #[derive(Debug, Clone, PartialEq)]

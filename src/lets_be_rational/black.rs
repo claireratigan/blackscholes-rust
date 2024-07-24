@@ -1,8 +1,6 @@
 use num_traits::{AsPrimitive, Float, FromPrimitive};
 use std::f64::consts::FRAC_1_SQRT_2;
 
-use statrs::function::erf::erfc;
-
 use crate::lets_be_rational::{
     intrinsic::normalised_intrinsic, normal_distribution::standard_normal_cdf,
     DENORMALISATION_CUTOFF, ONE_OVER_SQRT_TWO_PI, SQRT_TWO_PI,
@@ -15,11 +13,20 @@ const CODYS_THRESHOLD: f64 = 0.46875;
 
 const SMALL_T_EXPANSION_OF_NORMALISED_BLACK_THRESHOLD: f64 = 2.0 * SIXTEENTH_ROOT_DBL_EPSILON;
 
+#[inline]
+fn erfc<T>(x: T) -> T
+where
+    T: Float + FromPrimitive + AsPrimitive<f64>,
+{
+    T::from(statrs::function::erf::erfc(x.as_())).unwrap()
+}
+
+#[inline]
 fn erfcx<T>(x: T) -> T
 where
     T: Float + FromPrimitive + AsPrimitive<f64>,
 {
-    (x * x).exp() * T::from(erfc(x.as_())).unwrap()
+    (x * x).exp() * erfc(x)
 }
 
 #[allow(dead_code)]
@@ -44,15 +51,15 @@ where
 
     if q1 < T::from(CODYS_THRESHOLD).unwrap() {
         if q2 < T::from(CODYS_THRESHOLD).unwrap() {
-            two_b = (half * x).exp() * T::from(erfc(q1.as_())).unwrap()
-                - (-half * x).exp() * T::from(erfc(q2.as_())).unwrap();
+            two_b = (half * x).exp() * erfc(q1)
+                - (-half * x).exp() * erfc(q2);
         } else {
-            two_b = (half * x).exp() * T::from(erfc(q1.as_())).unwrap()
+            two_b = (half * x).exp() * erfc(q1)
                 - (-half * (h * h + t * t)).exp() * erfcx(q2);
         }
     } else if q2 < T::from(CODYS_THRESHOLD).unwrap() {
         two_b = (-half * (h * h + t * t)).exp() * erfcx(q1)
-            - (-half * x).exp() * T::from(erfc(q2.as_())).unwrap();
+            - (-half * x).exp() * erfc(q2);
     } else {
         two_b = (-half * (h * h + t * t)).exp() * (erfcx(q1) - erfcx(q2));
     }
