@@ -60,6 +60,7 @@ impl_from_option!(i16);
 impl_from_option!(i32);
 impl_from_option!(i64);
 impl_from_option!(i128);
+impl_from_option!(isize);
 
 /// The inputs to the Black-Scholes-Merton model.
 #[derive(Debug, Clone, PartialEq)]

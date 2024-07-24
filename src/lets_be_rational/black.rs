@@ -51,15 +51,12 @@ where
 
     if q1 < T::from(CODYS_THRESHOLD).unwrap() {
         if q2 < T::from(CODYS_THRESHOLD).unwrap() {
-            two_b = (half * x).exp() * erfc(q1)
-                - (-half * x).exp() * erfc(q2);
+            two_b = (half * x).exp() * erfc(q1) - (-half * x).exp() * erfc(q2);
         } else {
-            two_b = (half * x).exp() * erfc(q1)
-                - (-half * (h * h + t * t)).exp() * erfcx(q2);
+            two_b = (half * x).exp() * erfc(q1) - (-half * (h * h + t * t)).exp() * erfcx(q2);
         }
     } else if q2 < T::from(CODYS_THRESHOLD).unwrap() {
-        two_b = (-half * (h * h + t * t)).exp() * erfcx(q1)
-            - (-half * x).exp() * erfc(q2);
+        two_b = (-half * (h * h + t * t)).exp() * erfcx(q1) - (-half * x).exp() * erfc(q2);
     } else {
         two_b = (-half * (h * h + t * t)).exp() * (erfcx(q1) - erfcx(q2));
     }
