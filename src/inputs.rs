@@ -1,3 +1,4 @@
+use num_traits::ConstZero;
 use std::fmt::{Display, Formatter, Result as fmtResult};
 use std::ops::Neg;
 
@@ -36,6 +37,17 @@ macro_rules! impl_from_option {
             #[inline]
             fn from(val: OptionType) -> Self {
                 <$type>::from(val as i8)
+            }
+        }
+
+        impl From<$type> for OptionType {
+            #[inline]
+            fn from(value: $type) -> Self {
+                if value >= <$type>::ZERO {
+                    OptionType::Call
+                } else {
+                    OptionType::Put
+                }
             }
         }
     };
